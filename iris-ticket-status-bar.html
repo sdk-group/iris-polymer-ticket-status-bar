@@ -1,0 +1,51 @@
+<link rel="import" href="../polymer/polymer.html">
+
+<dom-module id="iris-ticket-status-bar">
+  <template>
+    <style>
+      :host {
+        display: inline;
+      }
+    </style>
+    <template is="dom-repeat" items="[[completeStatusIcons(ticket)]]">
+      <iron-icon icon="[[item]]"></iron-icon>
+    </template>
+  </template>
+  <script>
+    Polymer({
+      is: 'iris-ticket-status-bar',
+      properties: {
+        ticket: {
+          type: Object
+        },
+        iconsList: {
+          type: Object,
+          value: function() {
+            return {
+              veteran: "star-border",
+              invalid: "accessible",
+              manual_down: "arrow-downward",
+              routed_up: "swap-horiz"
+            };
+          }
+        }
+      },
+      getPriorities(ticket) {
+        let priorities = ticket ? ticket.priority || {} : {};
+
+        return _.chain(priorities)
+          .pickBy(p => !!p.value)
+          .map((p, name) => this.iconsList[name] ? this.iconsList[name] : 'arrow-upward')
+          .value();
+      },
+      getOther(ticket) {
+        let routed = ticket.is_routed ? ['swap-horiz'] : [];
+        return routed;
+      },
+      completeStatusIcons(ticket) {
+        return _.concat(this.getPriorities(ticket), this.getOther(ticket))
+      }
+    });
+  </script>
+</dom-module>
+> >
