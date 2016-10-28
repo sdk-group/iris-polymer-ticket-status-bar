@@ -6,6 +6,7 @@
       :host {
         display: inline;
       }
+
     </style>
     <template is="dom-repeat" items="[[completeStatusIcons(ticket)]]">
       <iron-icon icon="[[item]]"></iron-icon>
@@ -20,27 +21,36 @@
         },
         iconsList: {
           type: Object,
-          value: function() {
-            return {
-              veteran: "star-border",
-              invalid: "accessible",
-              manual_down: "arrow-downward",
-              routed_up: "swap-horiz"
-            };
+          value: function () {
+            return {veteran: "star-border", invalid: "accessible", manual_down: "arrow-downward", manual_up: "arrow-upward", routed_up: "swap-horiz"};
           }
         }
       },
       getPriorities(ticket) {
-        let priorities = ticket ? ticket.priority || {} : {};
+        let priorities = ticket
+          ? ticket.priority || {}
+          : {};
 
-        return _.chain(priorities)
-          .pickBy(p => !!p.value)
-          .map((p, name) => this.iconsList[name] ? this.iconsList[name] : 'arrow-upward')
-          .value();
+        return _.chain(priorities).pickBy(p => !!p.value).reduce((acc, p, name) => {
+          let icon = this.iconsList[name];
+          if (!!icon)
+            acc.push(icon);
+
+          return acc;
+        }, []).value();
       },
       getOther(ticket) {
-        let routed = ticket.is_routed ? ['swap-horiz'] : [];
-        return routed;
+        let other = ticket.is_routed
+          ? ['swap-horiz']
+          : [];
+
+        if (_.has(ticket, ['priority', 'manual', 'value'])) {
+          let manual = 'manual_' + (ticket.priority.manual.value > 0
+            ? 'up'
+            : 'down');
+          other.push(this.iconsList[manual]);
+        }
+        return other;
       },
       completeStatusIcons(ticket) {
         return _.concat(this.getPriorities(ticket), this.getOther(ticket))
@@ -48,4 +58,3 @@
     });
   </script>
 </dom-module>
-> >
